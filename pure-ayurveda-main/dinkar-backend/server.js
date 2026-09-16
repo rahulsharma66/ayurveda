@@ -1,0 +1,43 @@
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
+const { protect } = require("./middleware/auth.middleware");
+
+const connectDB = require("./config/db");
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use("/api/auth", require("./routes/auth.routes"));
+app.use("/api/admin", require("./routes/admin.routes"));
+app.use("/api/products", require("./routes/product.routes"));
+app.use("/api/categories", require("./routes/category.routes")); 
+app.use("/api/orders", require("./routes/order.routes"));
+app.use("/api/ingredients", require("./routes/ingredient.routes"));
+
+// 👇 ADDED THIS: The new payments route for Razorpay!
+app.use("/api/payments", require("./routes/payment.routes")); 
+
+app.get("/", (req, res) => {
+  res.send("API is running");
+});
+
+app.get("/api/test/protected", protect, (req, res) => {
+  res.json({
+    message: "You are authorized",
+    user: req.user,
+  });
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+
+connectDB();
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

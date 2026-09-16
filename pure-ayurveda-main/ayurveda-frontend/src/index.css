@@ -1,0 +1,201 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  
+ 
+
+
+
+  :root {
+    /* Ayurvedic Nature Palette */
+    --background: 45 30% 97%;
+    --foreground: 30 25% 15%;
+
+    --card: 45 25% 95%;
+    --card-foreground: 30 25% 15%;
+
+    --popover: 45 30% 97%;
+    --popover-foreground: 30 25% 15%;
+
+    /* Deep Forest Green */
+    --primary: 150 35% 25%;
+    --primary-foreground: 45 30% 97%;
+
+    /* Warm Cream */
+    --secondary: 40 30% 92%;
+    --secondary-foreground: 30 25% 20%;
+
+    --muted: 40 20% 90%;
+    --muted-foreground: 30 15% 45%;
+
+    /* Saffron Gold */
+    --accent: 35 85% 55%;
+    --accent-foreground: 30 25% 15%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 35 20% 85%;
+    --input: 35 20% 85%;
+    --ring: 150 35% 25%;
+
+    --radius: 0.75rem;
+
+    /* Custom Ayurvedic Colors */
+    --terracotta: 15 55% 50%;
+    --turmeric: 42 90% 55%;
+    --neem: 145 40% 35%;
+    --sandalwood: 30 35% 75%;
+    --lotus: 340 45% 65%;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(150 35% 25% / 0.95), hsl(150 40% 20% / 0.9));
+    --gradient-gold: linear-gradient(135deg, hsl(35 85% 55%), hsl(42 90% 60%));
+    --gradient-nature: linear-gradient(180deg, hsl(45 30% 97%), hsl(40 30% 92%));
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(30 25% 15% / 0.1);
+    --shadow-card: 0 8px 30px -8px hsl(30 25% 15% / 0.12);
+    --shadow-elevated: 0 20px 50px -15px hsl(30 25% 15% / 0.15);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 30 20% 8%;
+    --foreground: 45 25% 95%;
+
+    --card: 30 20% 12%;
+    --card-foreground: 45 25% 95%;
+
+    --popover: 30 20% 10%;
+    --popover-foreground: 45 25% 95%;
+
+    --primary: 145 40% 45%;
+    --primary-foreground: 30 20% 8%;
+
+    --secondary: 30 15% 18%;
+    --secondary-foreground: 45 25% 90%;
+
+    --muted: 30 15% 20%;
+    --muted-foreground: 40 15% 60%;
+
+    --accent: 35 80% 50%;
+    --accent-foreground: 30 20% 8%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 30 15% 22%;
+    --input: 30 15% 22%;
+    --ring: 145 40% 45%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Lato', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-gold);
+  }
+
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .bg-gradient-nature {
+    background: var(--gradient-nature);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .leaf-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5c-8 0-15 12-15 25s7 25 15 25 15-12 15-25S38 5 30 5z' fill='%23234d3a' fill-opacity='0.03'/%3E%3C/svg%3E");
+    background-size: 60px 60px;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeInUp {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+
+  @keyframes scaleIn {
+    from { 
+      opacity: 0; 
+      transform: scale(0.95); 
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1); 
+    }
+  }
+}
