@@ -1,10 +1,40 @@
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShoppingBag, Star } from "lucide-react";
-import { products } from "@/data/products";
+import { ArrowRight, ExternalLink } from "lucide-react";
+import { getProducts } from "@/lib/api";
+
+const getBuyLinks = (product: any) => {
+  const links = (product.platformLinks || [])
+    .filter((l: any) => l?.url)
+    .map((l: any) => ({ platform: (l.platform || "Buy").trim(), url: l.url }));
+  if (links.length === 0 && product.meeshoLink) {
+    links.push({ platform: "Meesho", url: product.meeshoLink });
+  }
+  return links;
+};
 
 export const FeaturedProducts = () => {
-  const featuredProducts = products.filter((p) => p.featured);
+  const navigate = useNavigate();
+  const [featuredProductList, setFeaturedProductList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await getProducts();
+        setFeaturedProductList((data || []).filter((p: any) => p.featured));
+      } catch (error) {
+        console.error("Failed to load featured products", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  if (loading) return null;
+  if (featuredProductList.length === 0) return null;
 
   return (
     <section className="py-16 md:py-24">
@@ -29,64 +59,88 @@ export const FeaturedProducts = () => {
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {featuredProducts.map((product) => (
-            <div
-              key={product.id}
-              className="group bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-elevated transition-all duration-500 border border-border/50"
-            >
-              {/* Image */}
-              <div className="relative aspect-[4/3] bg-secondary overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/5 to-accent/10">
-                  <span className="text-6xl">🌿</span>
-                </div>
-                <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-semibold rounded-full">
-                    {product.category}
-                  </span>
-                </div>
-                <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors duration-300" />
-              </div>
+          {featuredProductList.map((product) => {
+            const productId = product._id || product.id;
+            const selectedVariant = product.variants && product.variants.length > 0
+              ? product.variants[0]
+              : { salePrice: product.price || 0, mrp: product.price || 0, size: "Standard" };
+            const buyLinks = getBuyLinks(product);
 
-              {/* Content */}
-              <div className="p-6">
-                {/* Rating */}
-                <div className="flex items-center gap-1 mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                  ))}
-                  <span className="text-sm text-muted-foreground ml-2">(4.9)</span>
-                </div>
-
-                <h3 className="font-serif text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                  {product.shortName}
-                </h3>
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                  {product.description}
-                </p>
-
-                {/* Price */}
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-2xl font-bold text-primary">
-                    ₹{product.variants[0].salePrice}
-                  </span>
-                  {product.variants[0].mrp !== product.variants[0].salePrice && (
-                    <span className="text-sm text-muted-foreground line-through">
-                      ₹{product.variants[0].mrp}
-                    </span>
+            return (
+              <div
+                key={productId}
+                onClick={() => navigate(`/products/${productId}`)}
+                className="group bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-elevated transition-all duration-500 border border-border/50 cursor-pointer"
+              >
+                {/* Image */}
+                <div className="relative aspect-square bg-secondary overflow-hidden flex items-center justify-center">
+                  {product.images && product.images.length > 0 ? (
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <span className="text-6xl">🌿</span>
                   )}
-                  <span className="text-xs text-muted-foreground">
-                    / {product.variants[0].size}
-                  </span>
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1 bg-accent text-accent-foreground text-xs font-semibold rounded-full">
+                      {product.category}
+                    </span>
+                  </div>
                 </div>
 
-                {/* CTA */}
-                <Button className="w-full gap-2 bg-primary hover:bg-primary/90">
-                  <ShoppingBag className="w-4 h-4" />
-                  Add to Cart
-                </Button>
+                {/* Content */}
+                <div className="p-6">
+                  <h3 className="font-serif text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                    {product.shortName || product.name}
+                  </h3>
+                  <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                    {product.description}
+                  </p>
+
+                  {/* Price */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-xl font-bold text-primary">
+                      ₹{selectedVariant.salePrice}
+                    </span>
+                    {selectedVariant.mrp && selectedVariant.mrp !== selectedVariant.salePrice && (
+                      <span className="text-sm text-muted-foreground line-through">
+                        ₹{selectedVariant.mrp}
+                      </span>
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      / {selectedVariant.size}
+                    </span>
+                  </div>
+
+                  {/* Buy Links */}
+                  <div onClick={(e) => e.stopPropagation()}>
+                    {buyLinks.length > 0 ? (
+                      buyLinks.map((link: any, i: number) => (
+                        <Button
+                          key={i}
+                          className="w-full gap-2 mb-2 bg-primary hover:bg-primary/90"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.open(link.url, "_blank", "noopener,noreferrer");
+                          }}
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          Buy on {link.platform}
+                        </Button>
+                      ))
+                    ) : (
+                      <Button className="w-full gap-2" variant="outline" onClick={() => navigate(`/products/${productId}`)}>
+                        View Product
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingBag, Leaf, User, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { products } from "@/data/products"; 
+import { Menu, X, Leaf, Search } from "lucide-react";
+import { products } from "@/data/products";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCart } from "@/context/CartContext"; // <-- Added Cart Context
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -18,23 +16,8 @@ export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // <-- Grab cart functions and data
-  const { totalItems, openCart } = useCart(); 
-
-  // Check authentication status
-  useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem("token");
-      setIsLoggedIn(!!token);
-    };
-    checkAuth();
-    window.addEventListener("storage", checkAuth);
-    return () => window.removeEventListener("storage", checkAuth);
-  }, [location]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -57,7 +40,7 @@ export const Header = () => {
       {/* Search Overlay */}
       <AnimatePresence>
         {isSearchOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -116,7 +99,7 @@ export const Header = () => {
                     <p className="text-lg font-medium">Featured for You</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                       {products.filter(p => p.featured).slice(0, 4).map(product => (
-                        <button 
+                        <button
                           key={product.id}
                           onClick={() => handleProductClick(product.id)}
                           className="group p-4 rounded-2xl bg-card border border-border/50 hover:bg-secondary/30 text-left"
@@ -171,44 +154,17 @@ export const Header = () => {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-6">
-              <button 
+              <button
                 onClick={() => setIsSearchOpen(true)}
                 className="w-11 h-11 rounded-full bg-secondary hover:bg-secondary/80 flex items-center justify-center transition-colors"
               >
                 <Search className="w-5 h-5 text-muted-foreground" />
               </button>
-              
-              {/* <-- Cart Button Desktop --> */}
-              <Button variant="outline" size="lg" className="gap-3 h-12 px-6 text-base relative" onClick={openCart}>
-                <ShoppingBag className="w-5 h-5" />
-                Cart
-                {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-accent text-accent-foreground text-xs font-bold rounded-full flex items-center justify-center">
-                    {totalItems > 9 ? "9+" : totalItems}
-                  </span>
-                )}
-              </Button>
-
-              {isLoggedIn ? (
-                <Link 
-                  to="/profile"
-                  className="w-11 h-11 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center border border-primary/20 transition-colors"
-                >
-                  <User className="w-5 h-5 text-primary" />
-                </Link>
-              ) : (
-                <Button size="lg" className="bg-primary hover:bg-primary/90 gap-2 h-12 px-8" asChild>
-                  <Link to="/login">
-                    <User className="w-5 h-5" />
-                    Login
-                  </Link>
-                </Button>
-              )}
             </div>
 
             {/* Mobile Actions */}
             <div className="flex md:hidden items-center gap-2">
-               <button 
+              <button
                 onClick={() => setIsSearchOpen(true)}
                 className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center"
               >
@@ -240,33 +196,6 @@ export const Header = () => {
                   {link.name}
                 </Link>
               ))}
-              <div className="flex gap-4 mt-6">
-                {/* <-- Cart Button Mobile --> */}
-                <Button variant="outline" size="lg" className="flex-1 h-14 text-lg relative" onClick={() => { setIsMenuOpen(false); openCart(); }}>
-                  <ShoppingBag className="w-5 h-5 mr-2" /> Cart
-                  {totalItems > 0 && (
-                    <span className="absolute -top-2 -right-2 w-5 h-5 bg-accent text-accent-foreground text-xs font-bold rounded-full flex items-center justify-center">
-                      {totalItems > 9 ? "9+" : totalItems}
-                    </span>
-                  )}
-                </Button>
-                
-                {isLoggedIn ? (
-                  <Link 
-                    to="/profile" 
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex-1 h-14 rounded-xl bg-primary/10 flex items-center justify-center gap-2 text-primary border border-primary/20 font-medium"
-                  >
-                    <User className="w-5 h-5" /> Profile
-                  </Link>
-                ) : (
-                  <Button size="lg" className="flex-1 h-14 text-lg bg-primary" asChild>
-                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                      Login
-                    </Link>
-                  </Button>
-                )}
-              </div>
             </div>
           </nav>
         )}

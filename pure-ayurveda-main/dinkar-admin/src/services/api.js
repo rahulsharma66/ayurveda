@@ -12,6 +12,23 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// If the token is missing, expired, or the user no longer exists,
+// clear the session and send them to the login page.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    if (status === 401 && !error.config?.url?.includes("/api/auth/login")) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      if (window.location.pathname !== "/login" && window.location.pathname !== "/") {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // admin/src/services/api.js
 
 // ... your other code ...

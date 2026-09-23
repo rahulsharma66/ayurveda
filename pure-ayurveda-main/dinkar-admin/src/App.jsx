@@ -1,9 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Categories from "./pages/Categories";
-import Products from "./pages/Product"; 
-import Orders from "./pages/Orders";
-import Ingredients from "./pages/Ingredients"; // 👈 Added the import here!
+import Products from "./pages/Product";
+import Ingredients from "./pages/Ingredients";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLayout from "./components/AdminLayout";
 
@@ -12,19 +11,20 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        
+        <Route path="/login" element={<Login />} />
+
         {/* Protected Categories Route */}
-        <Route 
-          path="/categories" 
+        <Route
+          path="/categories"
           element={
             <ProtectedRoute>
               <AdminLayout>
                 <Categories />
               </AdminLayout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
+
         {/* Protected Product Route */}
         <Route
           path="/products"
@@ -37,19 +37,7 @@ function App() {
           }
         />
 
-        {/* Protected Orders Route */}
-        <Route
-          path="/orders"
-          element={
-            <ProtectedRoute>
-              <AdminLayout>
-                <Orders />
-              </AdminLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* 👇 Protected Ingredients Route (Safely inside the Routes block) 👇 */}
+        {/* Protected Ingredients Route */}
         <Route
           path="/ingredients"
           element={
@@ -60,7 +48,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        
       </Routes>
     </BrowserRouter>
   );

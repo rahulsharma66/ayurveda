@@ -35,6 +35,20 @@ const Products = () => {
     }
   };
 
+  // Toggle availability (active/inactive on the website)
+  const toggleActive = async (p) => {
+    try {
+      const updated = await api.put(`/api/admin/products/${p._id}`, { isActive: !p.isActive });
+      setProducts(products.map((x) => (x._id === p._id ? updated.data : x)));
+      setToast({
+        message: updated.data.isActive ? `"${p.name}" is now visible on the site` : `"${p.name}" is now hidden`,
+        type: "success",
+      });
+    } catch {
+      setToast({ message: "Failed to update availability", type: "error" });
+    }
+  };
+
   return (
     <>
       <div className="flex justify-between mb-4">
@@ -59,13 +73,15 @@ const Products = () => {
               <th className="p-4 font-semibold text-green-800">Price</th>
               <th className="p-4 font-semibold text-green-800">Stock</th>
               <th className="p-4 font-semibold text-green-800">Featured</th>
+              <th className="p-4 font-semibold text-green-800">Platform Links</th>
+              <th className="p-4 font-semibold text-green-800">Availability</th>
               <th className="p-4 font-semibold text-green-800">Actions</th>
             </tr>
           </thead>
           <tbody>
             {products.length === 0 ? (
               <tr>
-                <td colSpan="6" className="p-8 text-center text-gray-500">
+                <td colSpan="8" className="p-8 text-center text-gray-500">
                   No products found. Click "Add Product" to create one.
                 </td>
               </tr>
@@ -82,6 +98,39 @@ const Products = () => {
                     ) : (
                       <span className="text-gray-400 text-sm">-</span>
                     )}
+                  </td>
+                  <td className="p-4">
+                    {p.platformLinks && p.platformLinks.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5 max-w-xs">
+                        {p.platformLinks.map((link, i) => (
+                          link.url && (
+                            <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="text-xs text-rose-600 hover:text-rose-800 font-medium underline">
+                              {link.platform || `Link ${i + 1}`}
+                            </a>
+                          )
+                        ))}
+                      </div>
+                    ) : p.meeshoLink ? (
+                      <a href={p.meeshoLink} target="_blank" rel="noopener noreferrer" className="text-rose-600 hover:text-rose-800 font-medium text-sm underline">
+                        Meesho
+                      </a>
+                    ) : (
+                      <span className="text-red-500 text-sm font-medium">Missing</span>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    <button
+                      onClick={() => toggleActive(p)}
+                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold border transition-colors ${
+                        p.isActive !== false
+                          ? "bg-green-100 text-green-800 border-green-200 hover:bg-red-100 hover:text-red-700 hover:border-red-200"
+                          : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-green-100 hover:text-green-700 hover:border-green-200"
+                      }`}
+                      title={p.isActive !== false ? "Click to hide from website" : "Click to show on website"}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${p.isActive !== false ? "bg-green-600" : "bg-gray-400"}`} />
+                      {p.isActive !== false ? "Active" : "Inactive"}
+                    </button>
                   </td>
                   <td className="p-4 space-x-3">
                     <button

@@ -16,11 +16,7 @@ app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/admin", require("./routes/admin.routes"));
 app.use("/api/products", require("./routes/product.routes"));
 app.use("/api/categories", require("./routes/category.routes")); 
-app.use("/api/orders", require("./routes/order.routes"));
-app.use("/api/ingredients", require("./routes/ingredient.routes"));
-
-// 👇 ADDED THIS: The new payments route for Razorpay!
-app.use("/api/payments", require("./routes/payment.routes")); 
+app.use("/api/ingredients", require("./routes/ingredient.routes")); 
 
 app.get("/", (req, res) => {
   res.send("API is running");

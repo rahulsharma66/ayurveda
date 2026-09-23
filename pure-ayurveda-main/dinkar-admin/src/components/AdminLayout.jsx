@@ -18,7 +18,7 @@ const AdminLayout = ({ children }) => {
 
         <nav className="flex-1 p-4 space-y-2">
           {/* 👇 Notice "ingredients" is now in this list! 👇 */}
-          {["products", "categories", "ingredients", "orders"].map((route) => (
+          {["products", "categories", "ingredients"].map((route) => (
             <NavLink
               key={route}
               to={`/${route}`}

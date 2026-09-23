@@ -60,6 +60,24 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // Meesho product listing link (opens when customer clicks "Buy on Meesho")
+    meeshoLink: {
+      type: String,
+      default: "",
+    },
+    // Buy links for any platform (Meesho, Flipkart, Amazon, etc.)
+    // [{ platform: "Flipkart", url: "https://..." }]
+    platformLinks: [
+      {
+        platform: { type: String, trim: true, default: "" },
+        url: { type: String, trim: true, default: "" },
+      },
+    ],
+    // Availability toggle: hide the product on the site if out of stock on Meesho
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

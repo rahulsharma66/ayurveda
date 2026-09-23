@@ -14,7 +14,11 @@ const ProductModal = ({ isOpen, onClose, onSuccess, product }) => {
     category: "",
     stock: "",
     featured: false,
+    isActive: true,
   });
+
+  // Buy links for any platform (Meesho, Flipkart, Amazon, etc.)
+  const [platformLinks, setPlatformLinks] = useState([{ platform: "Meesho", url: "" }]);
 
   const [variants, setVariants] = useState([{ size: "", mrp: "", salePrice: "" }]);
   const [benefits, setBenefits] = useState([""]); 
@@ -65,7 +69,14 @@ const ProductModal = ({ isOpen, onClose, onSuccess, product }) => {
         category: product.category,
         stock: product.stock,
         featured: product.featured || false,
+        isActive: product.isActive !== false,
       });
+
+      setPlatformLinks(
+        product.platformLinks?.length > 0
+          ? product.platformLinks.map((l) => ({ platform: l.platform, url: l.url }))
+          : [{ platform: "Meesho", url: product.meeshoLink || "" }]
+      );
       
       setVariants(product.variants?.length > 0 ? product.variants : [{ size: "", mrp: "", salePrice: "" }]);
       setBenefits(product.benefits?.length > 0 ? product.benefits : [""]);
@@ -76,7 +87,8 @@ const ProductModal = ({ isOpen, onClose, onSuccess, product }) => {
       setExistingCover(imgs.length > 0 ? imgs[0] : null);
       setExistingGallery(imgs.length > 1 ? imgs.slice(1) : []);
     } else if (!product && isOpen) {
-      setForm((prev) => ({ name: "", description: "", longDescription: "", category: prev.category, stock: "", featured: false }));
+      setForm((prev) => ({ name: "", description: "", longDescription: "", category: prev.category, stock: "", featured: false, isActive: true }));
+      setPlatformLinks([{ platform: "Meesho", url: "" }]);
       setVariants([{ size: "", mrp: "", salePrice: "" }]);
       setBenefits([""]);
       setIngredients([]);
@@ -102,6 +114,11 @@ const ProductModal = ({ isOpen, onClose, onSuccess, product }) => {
   const addDynamicItem = (list, setList) => setList([...list, ""]);
   const removeDynamicItem = (list, setList, index) => setList(list.filter((_, i) => i !== index));
 
+  // Platform link handlers (dynamic add/remove)
+  const handlePlatformLinkChange = (index, field, value) => { const updated = [...platformLinks]; updated[index][field] = value; setPlatformLinks(updated); };
+  const addPlatformLink = () => setPlatformLinks([...platformLinks, { platform: "", url: "" }]);
+  const removePlatformLink = (index) => setPlatformLinks(platformLinks.filter((_, i) => i !== index));
+
   const coverPreview = newCover ? URL.createObjectURL(newCover) : existingCover;
 
   const handleSubmit = async (e) => {
@@ -109,6 +126,18 @@ const ProductModal = ({ isOpen, onClose, onSuccess, product }) => {
     setLoading(true);
 
     try {
+      const validPlatformLinks = platformLinks.filter(l => l.platform?.trim() && l.url?.trim());
+
+      if (validPlatformLinks.length === 0) {
+        setToast({ message: "Please add at least one platform link (e.g. Meesho, Flipkart, Amazon)", type: "error" });
+        setLoading(false);
+        return;
+      }
+
+      // Keep meeshoLink in sync for backward compatibility
+      const meeshoMatch = validPlatformLinks.find(l => l.platform.trim().toLowerCase() === "meesho");
+      const meeshoLink = meeshoMatch ? meeshoMatch.url : validPlatformLinks[0].url;
+
       let finalCoverUrl = existingCover;
       if (newCover) {
         const coverRes = await uploadImagesToCloudinary([newCover]);
@@ -132,6 +161,8 @@ const ProductModal = ({ isOpen, onClose, onSuccess, product }) => {
         ...form,
         stock: Number(form.stock),
         price: mainPrice, 
+        meeshoLink,
+        platformLinks: validPlatformLinks.map(l => ({ platform: l.platform.trim(), url: l.url.trim() })),
         variants: validVariants.map(v => ({ ...v, mrp: Number(v.mrp), salePrice: Number(v.salePrice) })),
         benefits: benefits.filter(b => b.trim() !== ""),
         ingredients: ingredients.filter(i => i.trim() !== ""), // Safely filter out blanks
@@ -175,6 +206,39 @@ const ProductModal = ({ isOpen, onClose, onSuccess, product }) => {
                 {categories.map((cat) => <option key={cat._id} value={cat.name}>{cat.name}</option>)}
               </select>
               <input name="stock" type="number" placeholder="Total Stock Quantity" value={form.stock} onChange={handleChange} required className="w-full border p-2 rounded focus:ring-2 focus:ring-green-500 outline-none" />
+
+              {/* Platform Buy Links */}
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block font-medium text-gray-700">Platform Links</label>
+                  <button type="button" onClick={addPlatformLink} className="text-sm bg-blue-50 text-blue-600 px-2 py-1 rounded">+ Add Platform</button>
+                </div>
+                <div className="space-y-2">
+                  {platformLinks.map((link, index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <input
+                        placeholder="Platform (e.g. Meesho, Flipkart, Amazon)"
+                        value={link.platform}
+                        onChange={(e) => handlePlatformLinkChange(index, "platform", e.target.value)}
+                        className="w-1/3 border p-1.5 rounded"
+                      />
+                      <input
+                        type="url"
+                        placeholder="https://.../product-link"
+                        value={link.url}
+                        onChange={(e) => handlePlatformLinkChange(index, "url", e.target.value)}
+                        className="flex-1 border p-1.5 rounded"
+                      />
+                      {platformLinks.length > 1 && <button type="button" onClick={() => removePlatformLink(index)} className="text-red-500 font-bold px-1">✕</button>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 mt-2 bg-rose-50 p-2 rounded border border-rose-100">
+                <input type="checkbox" name="isActive" id="isActive" checked={form.isActive} onChange={handleChange} className="w-4 h-4 text-green-600 rounded" />
+                <label htmlFor="isActive" className="text-gray-700 font-medium">Active on website (uncheck to hide if out of stock on platforms)</label>
+              </div>
               <div className="flex items-center gap-2 mt-2 bg-yellow-50 p-2 rounded border border-yellow-100">
                 <input type="checkbox" name="featured" id="featured" checked={form.featured} onChange={handleChange} className="w-4 h-4 text-green-600 rounded" />
                 <label htmlFor="featured" className="text-gray-700 font-medium">Mark as Featured Product</label>

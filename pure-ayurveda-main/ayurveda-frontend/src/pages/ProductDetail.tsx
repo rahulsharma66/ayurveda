@@ -1,9 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ShoppingBag, Star, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { getProductById } from "@/lib/api"; 
 
@@ -15,7 +14,6 @@ const ProductDetail = () => {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0); 
   
-  const { addToCart, items, updateQuantity } = useCart();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -49,6 +47,29 @@ const ProductDetail = () => {
     }
   };
 
+  const handleBuyOnMeesho = () => {
+    if (product?.meeshoLink) {
+      window.open(product.meeshoLink, "_blank", "noopener,noreferrer");
+    } else {
+      toast({
+        title: "Not available yet",
+        description: "No store link has been set for this product.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Union of platformLinks + back-compat meeshoLink
+  const buyLinks = useMemo(() => {
+    const links = (product?.platformLinks || [])
+      .filter((l: any) => l?.url)
+      .map((l: any) => ({ platform: l.platform || "Buy", url: l.url }));
+    if (links.length === 0 && product?.meeshoLink) {
+      links.push({ platform: "Meesho", url: product.meeshoLink });
+    }
+    return links;
+  }, [product]);
+
   if (loading) {
     return (
       <Layout>
@@ -75,8 +96,6 @@ const ProductDetail = () => {
     : [{ size: "Standard", salePrice: product?.price || 0, mrp: product?.price || 0 }];
   
   const selectedVariant = variants[selectedVariantIndex];
-  const productId = product?._id || id;
-  const cartItem = (items || []).find((i: any) => i.productId === productId && i.size === selectedVariant?.size);
 
   return (
     <Layout>
@@ -204,33 +223,31 @@ const ProductDetail = () => {
                 <span className="text-sm text-muted-foreground">/ {selectedVariant?.size}</span>
               </div>
 
-              {/* Add to Cart */}
-              <div className="mb-10 max-w-xs">
-                {cartItem ? (
-                  <div className="w-full flex items-center rounded-lg border border-primary overflow-hidden">
-                    <button className="flex-1 h-12 flex items-center justify-center bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors" onClick={() => updateQuantity(productId, selectedVariant.size, cartItem.quantity - 1)}>−</button>
-                    <span className="flex-[2] h-12 flex items-center justify-center font-bold bg-background">{cartItem.quantity}</span>
-                    <button className="flex-1 h-12 flex items-center justify-center bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors" onClick={() => updateQuantity(productId, selectedVariant.size, cartItem.quantity + 1)}>+</button>
-                  </div>
-                ) : (
+              {/* Buy Links (Meesho / Flipkart / Amazon / etc.) */}
+              {buyLinks.length > 0 ? (
+                <div className="mb-10 space-y-3 max-w-xs">
+                  {buyLinks.map((link: any, i: number) => (
+                    <Button
+                      key={i}
+                      className="w-full gap-2 bg-primary hover:bg-primary/90 h-12 text-base font-bold shadow-md"
+                      onClick={() => window.open(link.url, "_blank", "noopener,noreferrer")}
+                    >
+                      <ShoppingBag className="w-5 h-5" /> Buy on {link.platform}
+                    </Button>
+                  ))}
+                </div>
+              ) : (
+                <div className="mb-10 max-w-xs">
                   <Button
-                    className="w-full gap-2 bg-primary hover:bg-primary/90 h-12 text-base font-bold shadow-md"
-                    onClick={() => {
-                      addToCart({
-                        productId: productId,
-                        productName: product?.name,
-                        shortName: product?.shortName || product?.name,
-                        category: product?.category || "General",
-                        size: selectedVariant?.size || "Standard",
-                        mrp: selectedVariant?.mrp || selectedVariant?.salePrice,
-                        salePrice: selectedVariant?.salePrice,
-                        image: product?.images?.[0] || "",
-                      });
-                      toast({ title: "Added to Bag", description: `${product?.name} added.` });
-                    }}
-                  ><ShoppingBag className="w-5 h-5" /> Add to Cart</Button>
-                )}
-              </div>
+                    className="w-full gap-2 h-12 text-base font-bold shadow-md"
+                    variant="outline"
+                    onClick={handleBuyOnMeesho}
+                    disabled
+                  >
+                    <ShoppingBag className="w-5 h-5" /> Not available yet
+                  </Button>
+                </div>
+              )}
 
               {/* Details Info */}
               <div className="space-y-8 pt-6 border-t border-border/50">

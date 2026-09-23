@@ -1,7 +1,7 @@
 const express = require("express");
 const {
   createProduct,
-  getAllProducts,
+  getAllProductsAdmin,
   updateProduct,
   deleteProduct,
 } = require("../controllers/product.controller");
@@ -14,8 +14,9 @@ const router = express.Router();
 // all routes below are ADMIN ONLY
 router.use(protect, adminOnly);
 
+// Products
 router.post("/products", createProduct);
-router.get("/products", getAllProducts);
+router.get("/products", getAllProductsAdmin);
 router.put("/products/:id", updateProduct);
 router.delete("/products/:id", deleteProduct);
 

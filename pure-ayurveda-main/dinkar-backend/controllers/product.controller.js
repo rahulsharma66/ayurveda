@@ -14,9 +14,22 @@ exports.createProduct = async (req, res) => {
 };
 
 /**
- * GET ALL PRODUCTS (ADMIN)
+ * GET ALL ACTIVE PRODUCTS (PUBLIC STOREFRONT)
  */
 exports.getAllProducts = async (req, res) => {
+  try {
+    // isActive: { $ne: false } — treats missing field (legacy products) as active
+    const products = await Product.find({ isActive: { $ne: false } }).sort({ createdAt: -1 });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+};
+
+/**
+ * GET ALL PRODUCTS (ADMIN) — includes inactive products
+ */
+exports.getAllProductsAdmin = async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
     res.json(products);
@@ -80,8 +93,8 @@ exports.getProductById = async (req, res) => {
       product = await Product.findOne({ id: id });
     }
     
-    // 3. If no product was found in the database
-    if (!product) {
+    // 3. If no product was found or it has been deactivated (out of stock on Meesho)
+    if (!product || product.isActive === false) {
       return res.status(404).json({ message: "Product not found" });
     }
     
